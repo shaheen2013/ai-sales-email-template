@@ -1,0 +1,17 @@
+{
+  "scripts": {
+    "build": "node build.js",
+    "dev": "parcel src/*.html",
+    "dev:watch": "chokidar 'src/**/*' -c 'npm run dev'"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.21",
+    "chokidar": "^4.0.3",
+    "chokidar-cli": "^3.0.0",
+    "fs-extra": "^11.3.0",
+    "live-server": "^1.2.2",
+    "parcel": "^2.14.4",
+    "postcss": "^8.5.3",
+    "tailwindcss": "3"
+  }
+}
