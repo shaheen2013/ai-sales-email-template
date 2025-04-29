@@ -23,12 +23,16 @@ async function findHtmlFiles(dir) {
   return htmlFiles;
 }
 
-async function processCss(cssFilePath) {
-  const rawCss = await fs.readFile(cssFilePath, "utf8");
+async function processTailwind(contentPaths) {
+  const rawCss = `
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+`;
 
   const result = await postcss([
     tailwindcss({
-      content: ["./src/**/*.html"],
+      content: contentPaths,
     }),
     autoprefixer,
   ]).process(rawCss, { from: undefined });
@@ -38,7 +42,7 @@ async function processCss(cssFilePath) {
 
 async function build() {
   const srcDir = path.resolve("src");
-  const distDir = path.resolve("dist");
+  const distDir = path.resolve("build");
 
   await fs.ensureDir(distDir);
 
@@ -46,34 +50,30 @@ async function build() {
 
   for (const htmlFile of htmlFiles) {
     const relativePath = path.relative(srcDir, htmlFile);
-    const baseName = path.basename(htmlFile, ".html");
-    const cssFile = path.join(path.dirname(htmlFile), `${baseName}.css`);
 
-    if (await fs.pathExists(cssFile)) {
-      const htmlContent = await fs.readFile(htmlFile, "utf8");
-      const compiledCss = await processCss(cssFile);
+    const htmlContent = await fs.readFile(htmlFile, "utf8");
+    const compiledCss = await processTailwind([htmlFile]); // only scan this html for classes
 
-      // 1. Remove <link> tag (the one linking to css)
-      const withoutLink = htmlContent.replace(
-        /<link\s+[^>]*href=["'][^"']*\.css["'][^>]*>/i,
-        ""
-      );
+    // 1. Remove <link> tag if exists (cleanup)
+    const withoutLink = htmlContent.replace(
+      /<link\s+[^>]*href=["'][^"']*\.css["'][^>]*>/i,
+      ""
+    );
 
-      // 2. Insert <style> right before </head>
-      const finalHtml = withoutLink.replace(
-        /<\/head>/i,
-        `<style>\n${compiledCss}\n</style>\n</head>`
-      );
+    // 2. Inject compiled <style> before </head>
+    const finalHtml = withoutLink.replace(
+      /<\/head>/i,
+      `<style>\n${compiledCss}\n</style>\n</head>`
+    );
 
-      const outputPath = path.join(distDir, relativePath);
-      await fs.ensureDir(path.dirname(outputPath));
-      await fs.writeFile(outputPath, finalHtml);
+    const outputPath = path.join(distDir, relativePath);
+    await fs.ensureDir(path.dirname(outputPath));
+    await fs.writeFile(outputPath, finalHtml);
 
-      console.log(`✅ Built: ${outputPath}`);
-    } else {
-      console.warn(`⚠️ No matching CSS for: ${htmlFile}`);
-    }
+    console.log(`✅ Built: ${outputPath}`);
   }
+
+  console.log("🎉 Build complete. No external CSS needed anymore.");
 }
 
 build();

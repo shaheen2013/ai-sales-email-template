@@ -1,8 +1,7 @@
 {
   "scripts": {
     "build": "node build.js",
-    "dev": "parcel src/*.html",
-    "dev:watch": "chokidar 'src/**/*' -c 'npm run dev'"
+    "dev": "parcel src/*.html"
   },
   "dependencies": {
     "autoprefixer": "^10.4.21",
