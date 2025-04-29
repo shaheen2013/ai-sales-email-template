@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  font-family: "poppins", sans-serif;
+}
+
+.dev {
+  border: 1px solid red !important;
+}
