@@ -12,6 +12,8 @@ async function findHtmlFiles(dir) {
     const fullPath = path.join(dir, file);
     const stat = await fs.stat(fullPath);
 
+    console.log(" => ", path.join(dir, file));
+
     if (stat.isDirectory()) {
       const nestedHtmlFiles = await findHtmlFiles(fullPath);
       htmlFiles = htmlFiles.concat(nestedHtmlFiles);
@@ -47,6 +49,9 @@ async function build() {
   await fs.ensureDir(distDir);
 
   const htmlFiles = await findHtmlFiles(srcDir);
+  // console.log(" => ", htmlFiles);
+
+  return;
 
   for (const htmlFile of htmlFiles) {
     const relativePath = path.relative(srcDir, htmlFile);
